@@ -30,11 +30,19 @@ def make_new_student(first_name, last_name, github):
     print "Successfully added student: %s %s" % (first_name, last_name)
 
 
-def make_new_project(title, descript, max_grade):
+def make_new_project():
+    """This takes three args, title, description and max_grade"""
+
     query = """INSERT INTO Projects (title, description, max_grade) VALUES (?,?,?)"""
-    DB.execute(query, (title, descript, max_grade) )
+
+    args = raw_input("""Please enter a project title, description, and max grade, separated by commas.> """)
+    project_info = args.split(",")
+
+    title, description, max_grade = project_info 
+
+    DB.execute(query, (title, description, max_grade) )
     CONN.commit()
-    print "Successfully added project: %s, %s, %s," % (title, descript, max_grade)
+    print "Successfully added project: %s, %s, %s," % (title, description, max_grade)
 
 
 def view_project(project_name):
@@ -78,11 +86,8 @@ def enter_grade(first_name,last_name,project,grade):
     project_info = project_results.fetchone()
 
     if project_info is None:
-        print "If statement ran!"
-        args = raw_input("""That project does not exist yet. Please enter a project title, description, and max grade.> """)
-        project_info = args.split(",") 
-        make_new_project(project_info[0], project_info[1], project_info[2]) #title, descript, max_grade
-        project = project_info[0]
+        print "That project doesn't exist yet."
+        make_new_project()
 
     query_enter_grade = """INSERT INTO Grades VALUES (?,?,?)"""
     grade_results = DB.execute(query_enter_grade, (github, project, str(grade)) )
@@ -97,7 +102,7 @@ def main():
     command = None
     while command != "quit":
         input_string = raw_input("HBA Database> ")
-        tokens = input_string.split()
+        tokens = input_string.split(" ")
         command = tokens[0]
         args = tokens[1:]
 
@@ -112,6 +117,9 @@ def main():
             class_report_card()
         elif command == "enter_grade":
             enter_grade(*args) #FirstName, LastName, ProjectTitle, Grade
+        elif command == "new_project":
+            # Cannot enter a description via cmd because the array is split on spaces...
+            make_new_project(*args)
         else:
             print "That is not a valid command.  Please re-enter."
 
